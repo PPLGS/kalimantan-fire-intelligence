@@ -1075,3 +1075,75 @@ update();
     renderer.setSize(width, height);
   }).observe(host);
 })();
+
+
+// =====================================
+// BASEMAP CONFIGURATION
+// KALIMANTAN FIRE INTELLIGENCE
+// =====================================
+
+const map = L.map("map").setView([-1.5, 114], 6);
+
+const basemaps = {
+  "OpenStreetMap": L.tileLayer(
+    "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+    {
+      attribution: "&copy; OpenStreetMap contributors",
+      maxZoom: 19
+    }
+  ),
+
+  "Esri Satellite": L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+    {
+      attribution: "Tiles &copy; Esri",
+      maxZoom: 19
+    }
+  ),
+
+  "Dark Matter": L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png",
+    {
+      attribution: "&copy; CARTO",
+      maxZoom: 20
+    }
+  ),
+
+  "Positron": L.tileLayer(
+    "https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png",
+    {
+      attribution: "&copy; CARTO",
+      maxZoom: 20
+    }
+  ),
+
+  "Esri Topographic": L.tileLayer(
+    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Topo_Map/MapServer/tile/{z}/{y}/{x}",
+    {
+      attribution: "Tiles &copy; Esri",
+      maxZoom: 19
+    }
+  ),
+
+  "OpenTopoMap": L.tileLayer(
+    "https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png",
+    {
+      attribution: "&copy; OpenTopoMap contributors",
+      maxZoom: 17
+    }
+  )
+};
+
+// Basemap awal
+basemaps["Dark Matter"].addTo(map);
+
+// Kontrol pemilihan basemap
+L.control.layers(
+  basemaps,
+  null,
+  {
+    collapsed: false,
+    position: "topright"
+  }
+).addTo(map);
+
