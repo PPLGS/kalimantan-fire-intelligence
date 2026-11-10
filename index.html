@@ -162,7 +162,8 @@
       <p>Data diproses langsung di browser. Untuk website publik, data yang ingin dilihat semua pengunjung perlu disertakan di hosting atau layanan penyimpanan online.</p>
 
       <div class="upload-controls">
-        <input type="file" id="fileInput" accept=".geojson,.json,.zip,.csv,.ipynb">
+        <input type="file" id="fileInput"
+accept=".geojson,.json,.zip,.csv,.ipynb,.tif,.tiff">
         <button class="btn primary" id="loadBtn">Muat Data GIS / Notebook IPYNB</button>
       </div>
 
@@ -206,6 +207,11 @@
   </main>
 
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Library pembaca GeoTIFF -->
+<script src="https://unpkg.com/georaster"></script>
+
+<!-- Library penampil raster pada Leaflet -->
+<script src="https://unpkg.com/georaster-layer-for-leaflet/dist/georaster-layer-for-leaflet.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/shpjs@latest/dist/shp.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
