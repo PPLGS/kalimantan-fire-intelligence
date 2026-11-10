@@ -1,4 +1,3 @@
-
 // ==========================================
 // KALIMANTAN FIRE INTELLIGENCE
 // WEBGIS + GEOTIFF + JUPYTER NOTEBOOK
