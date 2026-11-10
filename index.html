@@ -177,16 +177,28 @@
       <div id="message" class="status"></div>
     </article>
 
-    <article class="panel upload" id="notebookPanel" style="display:none">
-      <div class="panel-head" style="padding:0 0 12px">
-        <div>
-          <h3>Pratinjau Jupyter Notebook</h3>
-          <p id="notebookInfo">Konten file .ipynb yang diunggah</p>
-        </div>
-        <span class="tag">IPYNB VIEWER</span>
-      </div>
-      <div id="notebookContent" style="display:grid;gap:10px"></div>
-    </article>
+  
+<article class="panel upload" id="notebookPanel" style="display:none">
+  <div class="panel-head" style="padding:0 0 12px">
+    <div>
+      <h3>Pratinjau Jupyter Notebook</h3>
+      <p id="notebookInfo">Konten file .ipynb yang diunggah</p>
+    </div>
+
+    <div style="display:flex;gap:8px;align-items:center">
+      <span class="tag">IPYNB VIEWER</span>
+      <button
+        class="btn"
+        id="deleteNotebookBtn"
+        type="button"
+        style="background:#7f1d1d;color:white;border-color:#991b1b">
+        🗑 Hapus Notebook
+      </button>
+    </div>
+  </div>
+
+  <div id="notebookContent" style="display:grid;gap:10px"></div>
+</article>
 
     <footer>
       KALIMANTAN FIRE INTELLIGENCE · WEBGIS PROTOTYPE · DATA VISUALIZATION
