@@ -1,3 +1,13 @@
+
+// ==========================================
+// KALIMANTAN FIRE INTELLIGENCE
+// WEBGIS + GEOTIFF + JUPYTER NOTEBOOK
+// ==========================================
+
+// ==========================================
+// 1. INISIALISASI PETA
+// ==========================================
+
 const map = L.map('map').setView([-1.5, 114], 5);
 
 L.tileLayer(
@@ -13,6 +23,10 @@ let seq = 0;
 let charts = {};
 
 const fmt = n => Number(n || 0).toLocaleString('id-ID');
+
+// ==========================================
+// 2. FUNGSI DASAR
+// ==========================================
 
 function safe(s) {
   return String(s ?? '').replace(/[&<>"']/g, c => ({
@@ -36,6 +50,7 @@ function keyOf(obj, candidates) {
 
 function popup(feature, layer) {
   const properties = feature.properties || {};
+
   const html = Object.entries(properties)
     .slice(0, 30)
     .map(([k, v]) =>
@@ -48,6 +63,10 @@ function popup(feature, layer) {
     </div>`
   );
 }
+
+// ==========================================
+// 3. MENAMBAHKAN DATA GEOJSON
+// ==========================================
 
 function addGeo(data, name, type = 'GeoJSON') {
   if (!data || !data.type) {
@@ -63,12 +82,14 @@ function addGeo(data, name, type = 'GeoJSON') {
         fillColor: '#ff715f',
         fillOpacity: 0.95
       }),
+
     style: () => ({
       color: '#ffad5c',
       weight: 1.5,
       fillColor: '#e86d54',
       fillOpacity: 0.3
     }),
+
     onEachFeature: popup
   }).addTo(map);
 
@@ -95,6 +116,139 @@ function addGeo(data, name, type = 'GeoJSON') {
   }
 }
 
+// ==========================================
+// 4. MEMBACA DAN MENAMPILKAN GEOTIFF
+// ==========================================
+
+function rasterColor(georaster) {
+  const min = Number(georaster.mins?.[0] ?? 0);
+  const max = Number(georaster.maxs?.[0] ?? 255);
+
+  const noData = georaster.noDataValue;
+
+  return function (values) {
+    if (!values || !values.length) return null;
+
+    // Raster RGB / multiband
+    if (values.length >= 3) {
+      const r = Number(values[0]);
+      const g = Number(values[1]);
+      const b = Number(values[2]);
+
+      if (![r, g, b].every(Number.isFinite)) return null;
+
+      if (
+        noData !== null &&
+        noData !== undefined &&
+        values.every(v => v === noData)
+      ) return null;
+
+      return `rgb(
+        ${Math.max(0, Math.min(255, r))}
+        ${Math.max(0, Math.min(255, g))}
+        ${Math.max(0, Math.min(255, b))}
+      )`;
+    }
+
+    // Raster single band
+    const value = Number(values[0]);
+
+    if (!Number.isFinite(value)) return null;
+
+    if (
+      noData !== null &&
+      noData !== undefined &&
+      value === noData
+    ) return null;
+
+    const range = max - min;
+
+    const normalized = range === 0
+      ? 0.5
+      : Math.max(0, Math.min(1, (value - min) / range));
+
+    // Gradasi warna untuk raster single band
+    const r = Math.round(35 + normalized * 220);
+    const g = Math.round(70 + normalized * 100);
+    const b = Math.round(180 - normalized * 155);
+
+    return `rgb(${r},${g},${b})`;
+  };
+}
+
+async function addGeoTIFF(file) {
+  if (
+    typeof parseGeoraster !== 'function' ||
+    typeof GeoRasterLayer !== 'function'
+  ) {
+    throw Error(
+      'Library GeoTIFF belum tersedia. Periksa library pada indeks.html.'
+    );
+  }
+
+  msg('Membaca raster GeoTIFF...');
+
+  const arrayBuffer = await file.arrayBuffer();
+
+  const georaster = await parseGeoraster(arrayBuffer);
+
+  if (!georaster) {
+    throw Error('File GeoTIFF tidak dapat dibaca.');
+  }
+
+  const rasterLayer = new GeoRasterLayer({
+    georaster: georaster,
+    opacity: 0.75,
+    resolution: 128,
+    pixelValuesToColorFn: rasterColor(georaster)
+  });
+
+  rasterLayer.addTo(map);
+
+  const bounds = rasterLayer.getBounds();
+
+  if (!bounds || !bounds.isValid()) {
+    map.removeLayer(rasterLayer);
+    throw Error(
+      'Koordinat raster tidak valid atau tidak didukung.'
+    );
+  }
+
+  const id = ++seq;
+
+  const width = georaster.width;
+  const height = georaster.height;
+
+  layers.set(id, {
+    id,
+    name: file.name,
+    type: 'GeoTIFF',
+    count: 1,
+    layer: rasterLayer,
+    data: null,
+    visible: true,
+    rasterInfo: {
+      width,
+      height,
+      bands: georaster.numberOfRasters,
+      projection: georaster.projection
+    }
+  });
+
+  update();
+
+  map.fitBounds(bounds.pad(0.1));
+
+  msg(
+    `Berhasil memuat GeoTIFF: ${file.name} ` +
+    `(${width} × ${height} piksel).`
+  );
+}
+
+// ==========================================
+// 5. UPDATE DAFTAR LAYER DAN STATISTIK
+// ==========================================
+
 function update() {
   const rows = document.getElementById('dataRows');
   const list = document.getElementById('layers');
@@ -105,6 +259,7 @@ function update() {
   if (!layers.size) {
     rows.innerHTML =
       '<tr><td colspan="3" class="empty">Belum ada data.</td></tr>';
+
     list.innerHTML =
       '<div class="empty">Belum ada data dimuat.</div>';
   }
@@ -120,6 +275,7 @@ function update() {
     types[record.type] =
       (types[record.type] || 0) + record.count;
 
+    // Data raster tidak mempunyai daftar fitur vektor.
     (record.data?.features || []).forEach(feature => {
       if (feature.geometry?.type === 'Point') {
         points++;
@@ -163,34 +319,44 @@ function update() {
       }
     });
 
+    const featureInfo = record.type === 'GeoTIFF'
+      ? 'Raster'
+      : fmt(record.count);
+
     rows.innerHTML += `
       <tr>
         <td>${safe(record.name)}</td>
         <td>${safe(record.type)}</td>
-        <td>${fmt(record.count)}</td>
+        <td>${featureInfo}</td>
       </tr>
     `;
 
     const element = document.createElement('div');
     element.className = 'layer';
 
+    const extraInfo = record.rasterInfo
+      ? `${record.rasterInfo.width} × ${record.rasterInfo.height} px · ${record.rasterInfo.bands} band`
+      : `${fmt(record.count)} fitur`;
+
     element.innerHTML = `
       <span>
         ${safe(record.name)}<br>
         <small>
-          ${safe(record.type)} · ${fmt(record.count)} fitur
+          ${safe(record.type)} · ${extraInfo}
         </small>
       </span>
-      <span>
+
+      <span style="display:flex;align-items:center;gap:8px">
         <input
           type="checkbox"
           ${record.visible ? 'checked' : ''}
           aria-label="Tampilkan layer"
         >
-        <button>Hapus</button>
+        <button type="button">Hapus</button>
       </span>
     `;
 
+    // Aktif/nonaktif layer
     element.querySelector('input').onchange = event => {
       record.visible = event.target.checked;
 
@@ -201,6 +367,7 @@ function update() {
       }
     };
 
+    // Penghapusan layer
     element.querySelector('button').onclick = () => {
       map.removeLayer(record.layer);
       layers.delete(record.id);
@@ -224,6 +391,10 @@ function update() {
 
   drawCharts(types, years);
 }
+
+// ==========================================
+// 6. GRAFIK
+// ==========================================
 
 function drawCharts(types, years) {
   Object.values(charts).forEach(chart => chart.destroy());
@@ -314,6 +485,10 @@ function drawCharts(types, years) {
   );
 }
 
+// ==========================================
+// 7. PRATINJAU JUPYTER NOTEBOOK
+// ==========================================
+
 function renderNotebook(notebook, fileName) {
   const panel = document.getElementById('notebookPanel');
   const content = document.getElementById('notebookContent');
@@ -340,6 +515,7 @@ function renderNotebook(notebook, fileName) {
   if (!cells.length) {
     content.textContent =
       'Notebook tidak memiliki sel yang dapat ditampilkan.';
+
     panel.style.display = 'block';
     return;
   }
@@ -382,6 +558,7 @@ function renderNotebook(notebook, fileName) {
     ) {
       cell.outputs.forEach(output => {
         const data = output.data || {};
+
         const textOutput = data['text/plain'] || output.text || '';
 
         if (textOutput) {
@@ -430,8 +607,13 @@ function renderNotebook(notebook, fileName) {
   });
 }
 
+// ==========================================
+// 8. UPLOAD SEMUA FORMAT DATA
+// ==========================================
+
 document.getElementById('loadBtn').onclick = async () => {
-  const file = document.getElementById('fileInput').files[0];
+  const fileInput = document.getElementById('fileInput');
+  const file = fileInput.files[0];
 
   if (!file) {
     msg('Pilih file terlebih dahulu.');
@@ -446,6 +628,7 @@ document.getElementById('loadBtn').onclick = async () => {
       .pop()
       .toLowerCase();
 
+    // JUPYTER NOTEBOOK
     if (extension === 'ipynb') {
       const notebook = JSON.parse(await file.text());
 
@@ -464,6 +647,15 @@ document.getElementById('loadBtn').onclick = async () => {
       );
     }
 
+    // GEOTIFF
+    else if (
+      extension === 'tif' ||
+      extension === 'tiff'
+    ) {
+      await addGeoTIFF(file);
+    }
+
+    // GEOJSON
     else if (
       extension === 'geojson' ||
       extension === 'json'
@@ -475,6 +667,7 @@ document.getElementById('loadBtn').onclick = async () => {
       );
     }
 
+    // SHAPEFILE ZIP
     else if (extension === 'zip') {
       const result = await shp(await file.arrayBuffer());
 
@@ -491,6 +684,7 @@ document.getElementById('loadBtn').onclick = async () => {
       }
     }
 
+    // CSV
     else if (extension === 'csv') {
       const parsed = await new Promise((resolve, reject) => {
         Papa.parse(file, {
@@ -558,12 +752,21 @@ document.getElementById('loadBtn').onclick = async () => {
       );
     }
 
-    msg('Berhasil memuat ' + file.name + '.');
+    if (extension !== 'ipynb' &&
+        extension !== 'tif' &&
+        extension !== 'tiff') {
+      msg('Berhasil memuat ' + file.name + '.');
+    }
 
   } catch (error) {
+    console.error(error);
     msg('Gagal: ' + error.message);
   }
 };
+
+// ==========================================
+// 9. ZOOM DAN RESET PETA
+// ==========================================
 
 document.getElementById('fitBtn').onclick = () => {
   let bounds = L.latLngBounds([]);
@@ -587,6 +790,10 @@ document.getElementById('fitBtn').onclick = () => {
 document.getElementById('resetBtn').onclick = () => {
   map.setView([-1.5, 114], 5);
 };
+
+// ==========================================
+// 10. EKSPOR CSV
+// ==========================================
 
 document.getElementById('exportBtn').onclick = () => {
   const csv =
@@ -613,7 +820,13 @@ document.getElementById('exportBtn').onclick = () => {
 
   link.download = 'ringkasan-karhutla.csv';
   link.click();
+
+  URL.revokeObjectURL(link.href);
 };
+
+// ==========================================
+// 11. TANGGAL
+// ==========================================
 
 document.getElementById('dateNow').textContent =
   new Date().toLocaleDateString('id-ID', {
@@ -622,10 +835,52 @@ document.getElementById('dateNow').textContent =
     year: 'numeric'
   });
 
+// ==========================================
+// 12. HAPUS NOTEBOOK
+// ==========================================
+
+const deleteNotebookButton =
+  document.getElementById('deleteNotebookBtn');
+
+if (deleteNotebookButton) {
+  deleteNotebookButton.addEventListener('click', () => {
+    const panel = document.getElementById('notebookPanel');
+    const content = document.getElementById('notebookContent');
+    const info = document.getElementById('notebookInfo');
+    const fileInput = document.getElementById('fileInput');
+
+    if (!panel || panel.style.display === 'none') return;
+
+    if (!confirm(
+      'Apakah Anda yakin ingin menghapus pratinjau Jupyter Notebook ini?'
+    )) return;
+
+    content.replaceChildren();
+
+    info.textContent = 'Belum ada notebook yang dimuat.';
+
+    panel.style.display = 'none';
+
+    if (
+      fileInput.files.length &&
+      fileInput.files[0].name.toLowerCase().endsWith('.ipynb')
+    ) {
+      fileInput.value = '';
+    }
+
+    msg('Pratinjau notebook berhasil dihapus.');
+  });
+}
+
+// ==========================================
+// 13. UPDATE AWAL
+// ==========================================
+
 update();
 
-// Animasi visual globe 3D.
-// Titik pada globe merupakan ilustrasi, bukan koordinat hotspot aktual.
+// ==========================================
+// 14. ANIMASI VISUAL GLOBE 3D
+// ==========================================
 
 (function init3D() {
   const host = document.getElementById('scene');
@@ -821,46 +1076,3 @@ update();
     renderer.setSize(width, height);
   }).observe(host);
 })();
-
-
-// ==========================================
-// FITUR HAPUS JUPYTER NOTEBOOK
-// ==========================================
-
-document.addEventListener("DOMContentLoaded", function () {
-  const deleteButton = document.getElementById("deleteNotebookBtn");
-  const notebookPanel = document.getElementById("notebookPanel");
-  const notebookContent = document.getElementById("notebookContent");
-  const notebookInfo = document.getElementById("notebookInfo");
-  const fileInput = document.getElementById("fileInput");
-  const message = document.getElementById("message");
-
-  if (!deleteButton) return;
-
-  deleteButton.addEventListener("click", function () {
-    const confirmed = confirm(
-      "Apakah Anda yakin ingin menghapus pratinjau Jupyter Notebook ini?"
-    );
-
-    if (!confirmed) return;
-
-    // Bersihkan tampilan notebook
-    notebookContent.innerHTML = "";
-    notebookInfo.textContent = "Belum ada notebook yang dimuat.";
-
-    // Sembunyikan panel notebook
-    notebookPanel.style.display = "none";
-
-    // Bersihkan pilihan file jika masih terpilih
-    if (fileInput && fileInput.files.length > 0) {
-      if (fileInput.files[0].name.toLowerCase().endsWith(".ipynb")) {
-        fileInput.value = "";
-      }
-    }
-
-    if (message) {
-      message.textContent = "Notebook berhasil dihapus dari tampilan.";
-    }
-  });
-});
-
