@@ -1,0 +1,91 @@
+:root{--bg:#071018;--panel:#0c1a24;--panel2:#10232e;--line:#1d3945;--muted:#76909d;--text:#e7f2f3;--mint:#58e0b1;--amber:#ffb45e;--red:#ff6c62;--blue:#62b9e9}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(ellipse at 58% 12%,#12313a 0,#071018 45%);color:var(--text);font-family:Manrope,Arial,sans-serif;min-height:100vh}
+button,input,select{font:inherit}
+.top{height:72px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 26px;background:#071018ef;position:sticky;top:0;z-index:50;backdrop-filter:blur(14px)}
+.brand{display:flex;align-items:center;gap:12px}
+.brand-icon{width:38px;height:38px;border:1px solid #286353;border-radius:12px;background:linear-gradient(145deg,#173c3d,#10232c);display:grid;place-items:center;font-size:20px}
+.brand h1{font-size:13px;letter-spacing:1.6px;margin:0;font-weight:800}
+.brand p{font:10px 'DM Mono';color:#8ba7af;margin:4px 0 0}
+.topright{display:flex;align-items:center;gap:15px;font:10px 'DM Mono';color:#8da8b1}
+.live{color:var(--mint);display:flex;align-items:center;gap:7px}
+.live:before{content:"";width:7px;height:7px;background:var(--mint);border-radius:50%;box-shadow:0 0 12px var(--mint);animation:pulse 1.5s infinite}
+@keyframes pulse{50%{opacity:.35;box-shadow:0 0 2px var(--mint)}}
+.wrap{max-width:1600px;margin:auto;padding:24px 26px 50px}
+.intro{display:flex;justify-content:space-between;align-items:end;margin-bottom:18px}
+.eyebrow{font:10px 'DM Mono';letter-spacing:2px;color:var(--mint);text-transform:uppercase}
+.intro h2{font-size:25px;margin:7px 0 5px;letter-spacing:-.8px}
+.intro p{font-size:11px;color:#8ca5af;margin:0}
+.date{font:10px 'DM Mono';color:#9db2ba;border:1px solid var(--line);padding:9px 12px;border-radius:7px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:13px}
+.metric{background:linear-gradient(145deg,#10232e,#0b1922);border:1px solid var(--line);border-radius:11px;padding:15px 17px;position:relative;overflow:hidden}
+.metric:after{content:"";position:absolute;width:90px;height:90px;right:-35px;top:-38px;border:1px solid #285447;border-radius:50%;box-shadow:0 0 0 12px #173a3322,0 0 0 25px #173a3315}
+.metric label{font:9px 'DM Mono';color:#7e9ba5;letter-spacing:1.3px}
+.metric strong{display:block;font-size:27px;margin:9px 0 4px;color:var(--mint);font-weight:800}
+.metric small{font-size:9px;color:#78929c}
+.grid{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(310px,.8fr);gap:13px}
+.panel{background:linear-gradient(145deg,#0d1d27f2,#0a1720f2);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:0 12px 35px #0002}
+.panel-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px 10px}
+.panel-head h3{font-size:12px;margin:0 0 4px}
+.panel-head p{font-size:9px;color:#78939d;margin:0}
+.tag{font:9px 'DM Mono';color:var(--mint);border:1px solid #285448;background:#0d2a27;padding:5px 8px;border-radius:5px}
+.scene-box{height:380px;position:relative;background:radial-gradient(ellipse at 50% 54%,#16434a 0,#0b202b 43%,#08131b 78%);overflow:hidden}
+.scene-box canvas{width:100%;height:100%;display:block}
+.scene-caption{position:absolute;left:16px;bottom:13px;font:9px 'DM Mono';color:#8aa9b1;pointer-events:none}
+.scene-label{position:absolute;right:16px;top:14px;text-align:right;font:9px 'DM Mono';color:#8ca9b0;pointer-events:none}
+.scene-label b{color:var(--mint);display:block;font-size:12px;margin-top:4px}
+.side-stack{display:grid;grid-template-rows:1fr 1fr;gap:13px}
+.chart-panel{min-height:180px}
+.chart-wrap{height:140px;padding:0 12px 12px}
+.chart-wrap canvas{width:100%!important;height:100%!important}
+.map-panel{margin-top:13px}
+.map-area{height:390px;background:#10232e}
+.leaflet-container{background:#10232e}
+.leaflet-control-zoom a,.leaflet-control-layers{background:#10232e!important;color:#d9eeee!important;border-color:#31515b!important}
+.leaflet-popup-content-wrapper,.leaflet-popup-tip{background:#0d202a;color:#e7f2f3}
+.leaflet-popup-content{font-size:11px}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{border:1px solid #2a4a55;background:#102731;color:#d4e5e7;border-radius:6px;padding:8px 11px;font-size:10px;cursor:pointer}
+.btn:hover{border-color:var(--mint);color:var(--mint)}
+.btn.primary{background:#17634f;border-color:#238466;color:#eafff7}
+.btn input{display:none}
+.lower{display:grid;grid-template-columns:1fr 1fr;gap:13px;margin-top:13px}
+.table-wrap{overflow:auto;padding:0 14px 14px}
+table{border-collapse:collapse;width:100%;font-size:10px}
+th{text-align:left;color:#78939d;font:9px 'DM Mono';padding:10px;border-bottom:1px solid var(--line)}
+td{padding:10px;border-bottom:1px solid #18313b;color:#c4d5d9}
+.empty{text-align:center;color:#77919b;padding:20px}
+.layers{padding:0 14px 14px;display:grid;gap:7px}
+.layer{display:flex;justify-content:space-between;align-items:center;padding:9px 10px;background:#10232d;border:1px solid #1c3944;border-radius:7px;font-size:10px}
+.layer small{color:#79949d}
+.layer button{background:#3a2225;border:0;color:#ff9c94;border-radius:4px;padding:5px 7px;cursor:pointer}
+.upload{margin-top:13px;padding:14px 16px}
+.upload h3{font-size:12px;margin:0 0 6px}
+.upload p{font-size:10px;color:#829ca5;margin:0 0 11px}
+.upload-controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.upload input[type=file]{max-width:260px;color:#a8bdc4;font-size:10px}
+.note{font-size:9px;color:#6f8c97;line-height:1.6;margin-top:10px}
+.status{font:10px 'DM Mono';color:var(--mint);margin-top:8px;min-height:14px}
+footer{font:9px 'DM Mono';color:#55717c;text-align:center;padding:22px 0}
+@media(max-width:900px){
+  .grid{grid-template-columns:1fr}
+  .side-stack{grid-template-columns:1fr 1fr;grid-template-rows:auto}
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .scene-box{height:330px}
+}
+@media(max-width:600px){
+  .top{padding:0 13px;height:62px}
+  .topright .status-text{display:none}
+  .brand h1{font-size:10px}
+  .brand p{font-size:8px}
+  .wrap{padding:18px 12px}
+  .intro h2{font-size:20px}
+  .date{display:none}
+  .metrics{gap:7px}
+  .metric{padding:12px}
+  .metric strong{font-size:22px}
+  .side-stack,.lower{grid-template-columns:1fr}
+  .scene-box{height:290px}
+  .map-area{height:330px}
+  .toolbar{margin-top:8px}
+}
