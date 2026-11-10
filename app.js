@@ -821,3 +821,46 @@ update();
     renderer.setSize(width, height);
   }).observe(host);
 })();
+
+
+// ==========================================
+// FITUR HAPUS JUPYTER NOTEBOOK
+// ==========================================
+
+document.addEventListener("DOMContentLoaded", function () {
+  const deleteButton = document.getElementById("deleteNotebookBtn");
+  const notebookPanel = document.getElementById("notebookPanel");
+  const notebookContent = document.getElementById("notebookContent");
+  const notebookInfo = document.getElementById("notebookInfo");
+  const fileInput = document.getElementById("fileInput");
+  const message = document.getElementById("message");
+
+  if (!deleteButton) return;
+
+  deleteButton.addEventListener("click", function () {
+    const confirmed = confirm(
+      "Apakah Anda yakin ingin menghapus pratinjau Jupyter Notebook ini?"
+    );
+
+    if (!confirmed) return;
+
+    // Bersihkan tampilan notebook
+    notebookContent.innerHTML = "";
+    notebookInfo.textContent = "Belum ada notebook yang dimuat.";
+
+    // Sembunyikan panel notebook
+    notebookPanel.style.display = "none";
+
+    // Bersihkan pilihan file jika masih terpilih
+    if (fileInput && fileInput.files.length > 0) {
+      if (fileInput.files[0].name.toLowerCase().endsWith(".ipynb")) {
+        fileInput.value = "";
+      }
+    }
+
+    if (message) {
+      message.textContent = "Notebook berhasil dihapus dari tampilan.";
+    }
+  });
+});
+
