@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kalimantan Fire Intelligence | 3D WebGIS</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <header class="top">
+    <div class="brand">
+      <div class="brand-icon">🔥</div>
+      <div>
+        <h1>KALIMANTAN FIRE INTELLIGENCE</h1>
+        <p>3D GEOSPATIAL MONITORING PLATFORM</p>
+      </div>
+    </div>
+    <div class="topright">
+      <span class="live">SYSTEM ONLINE</span>
+      <span class="status-text">BETA · SPATIAL ANALYTICS</span>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <section class="intro">
+      <div>
+        <div class="eyebrow">Forest & Land Fire Observatory / Indonesia</div>
+        <h2>Memantau Api. Memahami Risiko.</h2>
+        <p>Visualisasi spasial kebakaran hutan dan lahan di Pulau Kalimantan.</p>
+      </div>
+      <div class="date" id="dateNow">—</div>
+    </section>
+
+    <section class="metrics">
+      <div class="metric">
+        <label>HOTSPOT TERDETEKSI</label>
+        <strong id="hotspotCount">0</strong>
+        <small>Jumlah titik dari layer yang dimuat</small>
+      </div>
+      <div class="metric">
+        <label>AREA TERBAKAR</label>
+        <strong id="burnedArea">—</strong>
+        <small>Menyesuaikan atribut luas pada data</small>
+      </div>
+      <div class="metric">
+        <label>LAYER AKTIF</label>
+        <strong id="layerCount">0</strong>
+        <small>Vektor, raster, dan overlay</small>
+      </div>
+      <div class="metric">
+        <label>PROVINSI TERWAKILI</label>
+        <strong id="provinceCount">0</strong>
+        <small>Berdasarkan atribut provinsi</small>
+      </div>
+    </section>
+
+    <section class="grid">
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Simulasi Visual 3D · Kalimantan</h3>
+            <p>Visual animasi atmosferik untuk ringkasan pemantauan</p>
+          </div>
+          <span class="tag">LIVE VISUAL</span>
+        </div>
+        <div class="scene-box" id="scene">
+          <div class="scene-label">
+            KALIMANTAN REGION
+            <b>0.8° S · 114.0° E</b>
+          </div>
+          <div class="scene-caption">
+            ANIMATED 3D VISUAL · DATA SPASIAL DETAIL DITAMPILKAN PADA PETA DI BAWAH
+          </div>
+        </div>
+      </article>
+
+      <div class="side-stack">
+        <article class="panel chart-panel">
+          <div class="panel-head">
+            <div>
+              <h3>Komposisi Layer</h3>
+              <p>Jumlah fitur berdasarkan tipe layer</p>
+            </div>
+            <span class="tag">DATA</span>
+          </div>
+          <div class="chart-wrap"><canvas id="typeChart"></canvas></div>
+        </article>
+
+        <article class="panel chart-panel">
+          <div class="panel-head">
+            <div>
+              <h3>Tren Hotspot per Tahun</h3>
+              <p>Terbaca dari atribut tahun pada data</p>
+            </div>
+            <span class="tag">TEMPORAL</span>
+          </div>
+          <div class="chart-wrap"><canvas id="yearChart"></canvas></div>
+        </article>
+      </div>
+    </section>
+
+    <article class="panel map-panel">
+      <div class="panel-head">
+        <div>
+          <h3>Peta Interaktif Sebaran Kebakaran</h3>
+          <p>Data spasial yang kamu unggah akan ditampilkan pada peta ini.</p>
+        </div>
+        <div class="toolbar">
+          <button class="btn" id="fitBtn">Zoom ke data</button>
+          <button class="btn" id="resetBtn">Reset tampilan</button>
+        </div>
+      </div>
+      <div id="map" class="map-area"></div>
+    </article>
+
+    <section class="lower">
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Layer yang Dimuat</h3>
+            <p>Aktifkan atau hapus layer dari sesi browser ini.</p>
+          </div>
+        </div>
+        <div id="layers" class="layers">
+          <div class="empty">Belum ada data dimuat.</div>
+        </div>
+      </article>
+
+      <article class="panel">
+        <div class="panel-head">
+          <div>
+            <h3>Ringkasan Data</h3>
+            <p>Daftar data spasial pada sesi ini.</p>
+          </div>
+          <button class="btn" id="exportBtn">Ekspor CSV</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>NAMA FILE</th>
+                <th>FORMAT</th>
+                <th>FITUR</th>
+              </tr>
+            </thead>
+            <tbody id="dataRows">
+              <tr><td colspan="3" class="empty">Belum ada data.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </section>
+
+    <article class="panel upload">
+      <h3>+ Tambahkan data hasil pengolahan GIS</h3>
+      <p>Data diproses langsung di browser. Untuk website publik, data yang ingin dilihat semua pengunjung perlu disertakan di hosting atau layanan penyimpanan online.</p>
+
+      <div class="upload-controls">
+        <input type="file" id="fileInput" accept=".geojson,.json,.zip,.csv,.ipynb">
+        <button class="btn primary" id="loadBtn">Muat Data GIS / Notebook IPYNB</button>
+      </div>
+
+      <div class="note">
+        GeoJSON: EPSG:4326. Shapefile: ZIP berisi .shp, .shx, .dbf dan .prj.
+        CSV: kolom latitude/longitude atau lat/lon.
+        IPYNB: notebook Jupyter akan ditampilkan sebagai pratinjau sel Markdown,
+        kode, dan output yang sudah tersimpan; kode Python tidak dijalankan di browser.
+        GPKG dan GeoTIFF sebaiknya dipublikasikan sebagai GeoJSON atau tile raster/COG
+        melalui server geospasial.
+      </div>
+      <div id="message" class="status"></div>
+    </article>
+
+    <article class="panel upload" id="notebookPanel" style="display:none">
+      <div class="panel-head" style="padding:0 0 12px">
+        <div>
+          <h3>Pratinjau Jupyter Notebook</h3>
+          <p id="notebookInfo">Konten file .ipynb yang diunggah</p>
+        </div>
+        <span class="tag">IPYNB VIEWER</span>
+      </div>
+      <div id="notebookContent" style="display:grid;gap:10px"></div>
+    </article>
+
+    <footer>
+      KALIMANTAN FIRE INTELLIGENCE · WEBGIS PROTOTYPE · DATA VISUALIZATION
+    </footer>
+  </main>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/shpjs@latest/dist/shp.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js" defer></script>
+</body>
+</html>
